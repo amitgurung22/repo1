@@ -2,6 +2,8 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import requests
+import subprocess
+
 from streamlit_gsheets import GSheetsConnection
 
 if "spots" not in st.session_state:
@@ -62,5 +64,11 @@ df
 
 url = "https://docs.google.com/document/d/1H7qsqs7VtsRD0XrndYXSSYfgTDzdhusqojFwOzG1iUw/edit?usp=drivesdk"
 resp = requests.get(url)
-st.write(resp.content)
+
+with open("d.txt","wb") as f:
+    f.write(resp.content)
+
+result = subprocess.run(['cat', 'd.txt'],capture_outputs=True,text=True)
+
+st.write(result.stdout)
 
