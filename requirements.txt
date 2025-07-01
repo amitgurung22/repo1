@@ -1,5 +1,5 @@
 streamlit
 st-gsheets-connection
 requests
-mysqlclient
-SQLAlchemy
+mysqlclient==2.2.7
+SQLAlchemy==2.0.41
