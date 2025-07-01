@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import requests
 from streamlit_gsheets import GSheetsConnection
 
 if "spots" not in st.session_state:
@@ -59,5 +60,7 @@ df
 #    st.write(f"{row.name} has a :{row.pet}:")
 
 
-    
+url = 'https://docs.google.com/document/d/1t0tYZ9hbh-DP4F8zuqo1r464w03C9swVW9Lb0-6tuRc/edit?usp=drivesdk'
+resp = requests.get(url)
+st.write(resp.text)
 
