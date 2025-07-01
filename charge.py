@@ -50,25 +50,36 @@ for i in range(10):
     st.write(f"{i}:user{i}")
 st.divider()
 
-# Create a connection object.
-conn = st.connection("gsheets", type=GSheetsConnection)
-
-df = conn.read()
-
-df 
+## Create a connection object.
+#conn = st.connection("gsheets", type=GSheetsConnection)
+#
+#df = conn.read()
+#
+#df 
 
 # Print results.
 #for row in df.itertuples():
 #    st.write(f"{row.name} has a :{row.pet}:")
 
 
-url = "https://docs.google.com/document/d/1H7qsqs7VtsRD0XrndYXSSYfgTDzdhusqojFwOzG1iUw/edit?usp=drivesdk"
-resp = requests.get(url)
+#url = "https://docs.google.com/document/d/1H7qsqs7VtsRD0XrndYXSSYfgTDzdhusqojFwOzG1iUw/edit?usp=drivesdk"
+#resp = requests.get(url)
+#
+#with open("d.txt","wb") as f:
+#    f.write(resp.content)
+#
+#result = subprocess.run(['cat', 'd.txt'],capture_outputs=True,text=True)
+#
+#st.write(result.stdout)
 
-with open("d.txt","wb") as f:
-    f.write(resp.content)
 
-result = subprocess.run(['cat', 'd.txt'],capture_outputs=True,text=True)
 
-st.write(result.stdout)
+# Initialize connection.
+conn = st.connection('mysql', type='sql')
 
+# Perform query.
+df = conn.query('SELECT * from mytable;', ttl=600)
+
+# Print results.
+for row in df.itertuples():
+    st.write(f"{row.name} has a :{row.pet}:")
