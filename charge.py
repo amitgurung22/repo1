@@ -60,7 +60,7 @@ df
 #    st.write(f"{row.name} has a :{row.pet}:")
 
 
-url = 'https://docs.google.com/document/d/1t0tYZ9hbh-DP4F8zuqo1r464w03C9swVW9Lb0-6tuRc/edit?usp=drivesdk'
+url = "https://docs.google.com/document/d/1H7qsqs7VtsRD0XrndYXSSYfgTDzdhusqojFwOzG1iUw/edit?usp=drivesdk"
 resp = requests.get(url)
 st.write(resp.text)
 
