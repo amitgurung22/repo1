@@ -2,11 +2,11 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 
+if "spots" not in st.session_state:
+  st.session_state.spots = 4
 st.write(f"Number of spots available : {st.session_state.spots}")
 st.divider()
 
-#if "spots" not in st.session_state:
-#  st.session_state.spots = 4
 
 #spots = 0
 def restore_spots():
