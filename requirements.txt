@@ -1,3 +1,5 @@
 streamlit
 st-gsheets-connection
 requests
+mysqlclient
+SQLAlchemy
