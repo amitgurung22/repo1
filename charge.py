@@ -62,5 +62,5 @@ df
 
 url = "https://docs.google.com/document/d/1H7qsqs7VtsRD0XrndYXSSYfgTDzdhusqojFwOzG1iUw/edit?usp=drivesdk"
 resp = requests.get(url)
-st.write(resp.text)
+st.write(resp.content)
 
