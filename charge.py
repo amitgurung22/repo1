@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import subprocess
 
-from streamlit_gsheets import GSheetsConnection
+#from streamlit_gsheets import GSheetsConnection
 
 if "spots" not in st.session_state:
   st.session_state.spots = 4
@@ -75,11 +75,11 @@ st.divider()
 
 
 # Initialize connection.
-conn = st.connection('mysql', type='sql')
-
-# Perform query.
-df = conn.query('SELECT * from mytable;', ttl=600)
-
-# Print results.
-for row in df.itertuples():
-    st.write(f"{row.name} has a :{row.pet}:")
+#conn = st.connection('mysql', type='sql')
+#
+## Perform query.
+#df = conn.query('SELECT * from mytable;', ttl=600)
+#
+## Print results.
+#for row in df.itertuples():
+#    st.write(f"{row.name} has a :{row.pet}:")
