@@ -19,41 +19,60 @@ def get_sheet_data():
      ws.append(sh.get_worksheet(i))
    return ws
 
-spots = 0
 ws = get_sheet_data()
 
+
+if 'selected_name' not in st.session_state : 
+  st.session_state.selected_name = "None" 
+
+if 'button_disabled' not in st.session_state:
+    st.session_state.button_disabled = True
+
+def print_avail_spot():
+  st.write(f"Selected user : {st.session_state.selected_name}")
+  st.write(f"Number of spots available : {st.session_state.spots}")
+
+
 print("***** debug1 *****")
-spots = int(ws[0].cell(1,1).value)
-print(f"***** debug2 : {spots} *****")
-st.session_state['spots'] = spots
-st.write(f"Number of spots available : {spots}")
+st.session_state['spots'] = int(ws[0].cell(1,1).value)
+
+print(f"***** debug2 : {st.session_state.spots} *****")
+
 
 #spots = 0
-def restore_spots():
-    st.write("restoring spots...")
+def add_to_queue():
+    st.write("Adding to queue..")
     ws[0].update([[4]],'A1')
+    st.session_state.spots = 4
+    print("***** add_to_queue *****")
     
 def take_spot():
-    if st.session_state['spots'] > 0:
-      st.session_state['spots'] = st.session_state['spots'] - 1
-      #spots = spots -1 
-      #ws[0].update([[spots]],'A1')
-      ws[0].update([[st.session_state['spots']]],'A1')
+    if st.session_state.spots > 0:
+      st.session_state.spots = st.session_state.spots - 1
+      ws[0].update([[st.session_state.spots]],'A1')
       st.write("taking a spot ...")
-      st.rerun()
+      #st.rerun()
+      print("***** take_spot *****")
     else:
         st.write("No spots available")    
 
 def release_spot():
-    if (spots < 4):
+    if (st.session_state.spots < 4):
       st.write("Releasing a spot...") 
-      spots = spots +1 
-      ws[0].update([[spots]],'A1')
+      st.session_state.spots = st.session_state.spots +1 
+      ws[0].update([[st.session_state.spots]],'A1')
+      print("***** release_spot *****")
     
-    
-t = st.button("take a spot")
-r = st.button("release a spot")
-res = st.button("restore all spots")
+col1,col2,col3 = st.columns(3)
+with col1:
+  t = st.button("Take a spot",disabled=(st.session_state.selected_name == "None"))
+
+with col2:
+  r = st.button("Release a spot",disabled=(st.session_state.selected_name == "None"))
+
+with col3:
+  res = st.button("Add to queue",disabled=(st.session_state.selected_name == "None"))
+
 
 
 if t :
@@ -61,9 +80,13 @@ if t :
 if r :
     release_spot()
 if res:
-    restore_spots()
+    add_to_queue()
     
-    
+names = ["Amit Gurung", "Aarav", "Tvisha"]
+
+st.selectbox("Identify yourself",names, key="selected_name")
+
+print_avail_spot()
 
 st.caption("QUEUE")
 st.divider()
