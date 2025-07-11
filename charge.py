@@ -15,12 +15,21 @@ def get_sheet_data():
    sheet_id = "1X5-Q9X9Z2IzR604BIefQfr1iRS7qmMPGbFLgBH5LBW8"
    sh = client.open_by_key(sheet_id)
    ws = []
+   l_l_l = []
    for i in range(len(sh.worksheets())):
-     ws.append(sh.get_worksheet(i))
-   return ws
+     s = sh.get_worksheet(i)
+     ws.append(s)
+     l_l_l.append(s.get_all_values())
+   return ws, l_l_l
 
-ws = get_sheet_data()
+ws, l_l_l = get_sheet_data()
 
+l_l = l_l_l[1]
+
+user_q = []
+for i in range(len(l_l)):
+    if len(l_l[i]) > 0:
+        user_q.append(l_l[i][0])
 
 if 'selected_name' not in st.session_state : 
   st.session_state.selected_name = "None" 
@@ -42,9 +51,10 @@ print(f"***** debug2 : {st.session_state.spots} *****")
 #spots = 0
 def add_to_queue():
     st.write("Adding to queue..")
-    ws[0].update([[4]],'A1')
-    st.session_state.spots = 4
+    #ws[0].update([[4]],'A1')
+    #st.session_state.spots = 4
     print("***** add_to_queue *****")
+    ws[1].update([[st.session_state.selected_name]],f"A{len(l_l_l[1])+1}")
     
 def take_spot():
     if st.session_state.spots > 0:
@@ -64,66 +74,48 @@ def release_spot():
       print("***** release_spot *****")
     
 col1,col2,col3 = st.columns(3)
+
 with col1:
-  t = st.button("Take a spot",disabled=(st.session_state.selected_name == "None"))
+  st.button("Take a spot",disabled=(st.session_state.selected_name == "None"),on_click=take_spot)
 
 with col2:
-  r = st.button("Release a spot",disabled=(st.session_state.selected_name == "None"))
+  st.button("Release a spot",disabled=(st.session_state.selected_name == "None"),on_click=release_spot)
 
 with col3:
-  res = st.button("Add to queue",disabled=(st.session_state.selected_name == "None"))
+  st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
 
 
 
-if t :
-    take_spot()
-if r :
-    release_spot()
-if res:
-    add_to_queue()
-    
-names = ["Amit Gurung", "Aarav", "Tvisha"]
+#get users from worksheet#2
+names = []
+for i in range(len(l_l_l[2])):
+  names.append(l_l_l[2][i][0])
 
 st.selectbox("Identify yourself",names, key="selected_name")
 
 print_avail_spot()
 
-st.caption("QUEUE")
 st.divider()
-for i in range(10):
-    st.write(f"{i}:user{i}")
+st.caption("Current wait queue.. ")
+
+df = pd.DataFrame(
+     {
+         "Names": user_q 
+     }
+)
+
+st.table(df)
 st.divider()
 
-## Create a connection object.
-#conn = st.connection("gsheets", type=GSheetsConnection)
-#
-#df = conn.read()
-#
-#df 
 
-# Print results.
-#for row in df.itertuples():
-#    st.write(f"{row.name} has a :{row.pet}:")
+with st.form("my_form"):
+    row = st.columns([1,2,2])
+    name = row[0].text_input("Name")
+    email = row[1].text_input("Email")
+    ph = row[2].text_input("Phone# (opt)")
+    submitted = st.form_submit_button("Add new user")
+    if submitted:
+      st.write(f"Added new user : {name} {email} {ph} ")
+      entry = [name,email,ph]
+      ws[2].update([entry],f"A{len(l_l_l[2])+1}")
 
-
-#url = "https://docs.google.com/document/d/1H7qsqs7VtsRD0XrndYXSSYfgTDzdhusqojFwOzG1iUw/edit?usp=drivesdk"
-#resp = requests.get(url)
-#
-#with open("d.txt","wb") as f:
-#    f.write(resp.content)
-#
-#result = subprocess.run(['cat', 'd.txt'],capture_outputs=True,text=True)
-#
-#st.write(result.stdout)
-
-
-
-# Initialize connection.
-#conn = st.connection('mysql', type='sql')
-#
-## Perform query.
-#df = conn.query('SELECT * from mytable;', ttl=600)
-#
-## Print results.
-#for row in df.itertuples():
-#    st.write(f"{row.name} has a :{row.pet}:")
