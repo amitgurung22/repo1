@@ -192,3 +192,22 @@ with st.form("my_form"):
       entry = [name,email,ph]
       ws[2].update([entry],f"A{len(l_l_l[2])+1}")
 
+
+
+with st.expander("Maintenance"):
+  admin_psswd = st.text_input("Admin password")
+  with st.form("form2"):
+    #b1 = st.button("Clear queue",disabled=(admin_psswd != "1234"))
+    upd_spots =  st.number_input("Enter # of spots available",disabled=(admin_psswd != "1234"))
+    c_val = st.checkbox("Clear queue",disabled=(admin_psswd != "1234"))
+    sub1 = st.form_submit_button("Apply")
+    if sub1:
+      ws[0].update([[upd_spots]],'A1')
+      print("updating slots to {upd_spots}")
+      if c_val:
+        ws[1].delete_rows(1,len(l_l_l[1]))
+        user_q = []
+      st.rerun()
+
+
+
