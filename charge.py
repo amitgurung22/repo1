@@ -43,11 +43,6 @@ for i in range(len(l_l)):
         if (re.match(r"\w",nm)):
           user_q.append(l_l[i][0])
 
-
-st.title("Tesla Las Cimas Ev :material/electric_car: Charging Site")
-st.divider()
-st.markdown(":red[:small[*****    Pls refresh before any action to use up-to-date information        ****]]")
-
 if 'selected_name' not in st.session_state : 
   st.session_state.selected_name = "None" 
 
@@ -142,82 +137,127 @@ def send_email(to_email,sub,body):
   
   print(f"Email sent! to {receiver_email} sub:{sub} body:{body}.. ")
 
+def send_test_email():
+  send_email(email_dict[st.session_state.selected_name],"This is a test email from from ev charing site","")
 
-col1,col2,col3,col4 = st.columns(4)
+tab1, tab2 = st.tabs(["Main","Instructions"])
 
-with col1:
-  st.button("Take spot",disabled=(st.session_state.selected_name == "None"),on_click=take_spot)
+with tab1:
+  st.title("Tesla Las Cimas Ev :material/electric_car: Charging Reservation")
+  st.divider()
+  st.markdown(":red[:small[*****    Pls refresh before any action to use up-to-date information        ****]]")
+  
+  
+  col1,col2,col3,col4 = st.columns(4)
+  
+  with col1:
+    st.button("Take spot",disabled=(st.session_state.selected_name == "None"),on_click=take_spot)
+  
+  with col2:
+    st.button("Release spot",disabled=(st.session_state.selected_name == "None"),on_click=release_spot)
+  
+  with col3:
+      st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
+  #  st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
+  
+  with col4:
+      st.button("Quit queue",disabled=(st.session_state.selected_name == "None"),on_click=quit_queue)
+  
+  
+  #get users from worksheet#2
+  names = []
+  email_dict = dict()
+  
+  for i in range(len(l_l_l[2])):
+    nm = l_l_l[2][i][0]
+    em = l_l_l[2][i][1]
+    names.append(nm)
+    email_dict[nm] = em
+  
+  st.divider()
+  st.selectbox("Identify yourself",names, key="selected_name")
+  
+  print_avail_spot()
+  
+  st.divider()
+  st.subheader("Current wait queue.. ")
+  
+  
+  df = pd.DataFrame(
+       {
+           "Name": user_q 
+       }
+  )
+  
+  st.table(df)
+  st.divider()
+  
+  with st.expander("Add/modify user info"): 
+    with st.form("my_form"):
+        row = st.columns([1,2,2])
+        name = row[0].text_input("Name")
+        email = row[1].text_input("Email")
+        ph = row[2].text_input("Phone# (opt)")
+        submitted = st.form_submit_button("Add/modify user info")
+        if submitted:
+          st.write(f"Added new user : {name} {email} {ph} ")
+          entry = [name,email,ph]
+          cell = ws[2].find(name)
+          if (cell) :
+              ws[2].update([entry],f"A{cell.row}")
+          else:
+              ws[2].update([entry],f"A{len(l_l_l[2])+1}")
+  
+  
+  
+  with st.expander("Maintenance"):
+    admin_psswd = st.text_input("Admin password")
+    with st.form("form2"):
+      #b1 = st.button("Clear queue",disabled=(admin_psswd != "1234"))
+      upd_spots =  st.number_input("Enter # of spots available",disabled=(admin_psswd != "1234"))
+      c_val = st.checkbox("Clear queue",disabled=(admin_psswd != "1234"))
+      sub1 = st.form_submit_button("Apply",disabled=(admin_psswd != "1234"))
+      if sub1:
+        ws[0].update([[upd_spots]],'A1')
+        print("updating slots to {upd_spots}")
+        if c_val:
+          ws[1].delete_rows(1,len(l_l_l[1]))
+          user_q = []
+        st.rerun()
+  
+  
+  st.markdown(":material/article_person: :blue[Created by : Amit Gurung amitgurung22@gmail.com] ")
 
-with col2:
-  st.button("Release spot",disabled=(st.session_state.selected_name == "None"),on_click=release_spot)
+with tab2:
+    st.markdown("""
+       ### Instructions :material/quick_reference_all:
+       * Current # of empty charging spots and current waiting queue can viewed on the main page. Always refresh to get up-to-date information 
+       * For any other action, user needs to identify them by selecting their name from the "Identify yourself dropdown (or can type name there)
+       * Once user is identified, then other action button buttons will become visible
+       * Press "Take spot" button once you take a open spot and plug your car for charging
+       * Press "Release spot" button once you release a spot (or are enroute to release a spot)
+       * When # of spots == 0, press "Add to queue" button to add yourself to the waiting queue. Your name should be added to the wait queue in order
+       * If for some reason you want to quit the queue, press "Quit queue button"
+       * When # of empty spots == 0 and there are people in the wait queue, if a person (occupying one of the spots) presses "Release spot" then an email is sent to the 1st and 2nd person in wait queue"
+       * Notification Email is sent from my gmail account with id amitgurung22@gmail.com, pls check spam folder for email received. Try the test email button at the bottom to try if a test email can be received on your email id. **Pls identify yourself before pressing this button**"
+       * Your preferred email id can be changed by click "Add/modify user info"
+         * If order to modify existing user info, pls match Name precisely
+         * New user info can also be added using the same form
+    """)
+    st.button("Send test :email: ",on_click=send_test_email)
+    st.markdown("""
 
-with col3:
-    st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
-#  st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
+       ### Limitations :material/production_quantity_limits:
+       * Google sheet API allows limited number of api access per minute. If multiple users are interacting at the same time you may run into :red["Quota exceeded for quota metric 'Read requests' and limit.."] Please wait a minute and refresh, it should work
+       * Currently this website is hosted on a local machine with forwarding. If the machine is rebooted, the link to this site will change, but will share this in time
+       * No real user authentication (as wanted to make this simple), this works on trust that people are doing the right thing
+       * Created over a weekend, so may have bugs. pls report to me : amitgurung22@gmail.com  any issues you encounter
 
-with col4:
-    st.button("Quit queue",disabled=(st.session_state.selected_name == "None"),on_click=quit_queue)
+       ### Future work :material/rocket_launch:
+       * Host this website on streamlit cloud, so that there is no dependency on a local machine working
+       * Move to text message based notification (instead of :email: ), but this may add :heavy_dollar_sign:
 
-
-#get users from worksheet#2
-names = []
-email_dict = dict()
-
-for i in range(len(l_l_l[2])):
-  nm = l_l_l[2][i][0]
-  em = l_l_l[2][i][1]
-  names.append(nm)
-  email_dict[nm] = em
-
-st.divider()
-st.selectbox("Identify yourself",names, key="selected_name")
-
-print_avail_spot()
-
-st.divider()
-st.subheader("Current wait queue.. ")
-
-
-df = pd.DataFrame(
-     {
-         "Name": user_q 
-     }
-)
-
-st.table(df)
-st.divider()
-
-
-with st.form("my_form"):
-    row = st.columns([1,2,2])
-    name = row[0].text_input("Name")
-    email = row[1].text_input("Email")
-    ph = row[2].text_input("Phone# (opt)")
-    submitted = st.form_submit_button("Add new user")
-    if submitted:
-      st.write(f"Added new user : {name} {email} {ph} ")
-      entry = [name,email,ph]
-      ws[2].update([entry],f"A{len(l_l_l[2])+1}")
-
-
-
-with st.expander("Maintenance"):
-  admin_psswd = st.text_input("Admin password")
-  with st.form("form2"):
-    #b1 = st.button("Clear queue",disabled=(admin_psswd != "1234"))
-    upd_spots =  st.number_input("Enter # of spots available",disabled=(admin_psswd != "1234"))
-    c_val = st.checkbox("Clear queue",disabled=(admin_psswd != "1234"))
-    sub1 = st.form_submit_button("Apply",disabled=(admin_psswd != "1234"))
-    if sub1:
-      ws[0].update([[upd_spots]],'A1')
-      print("updating slots to {upd_spots}")
-      if c_val:
-        ws[1].delete_rows(1,len(l_l_l[1]))
-        user_q = []
-      st.rerun()
-
-
-st.markdown(":material/article_person: :blue[Created by : Amit Gurung amitgurung22@gmail.com] ")
+    """)
 
 #google material icon
 #https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:article_person:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f
