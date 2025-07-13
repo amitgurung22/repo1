@@ -44,6 +44,9 @@ for i in range(len(l_l)):
           user_q.append(l_l[i][0])
 
 
+st.title("Tesla Las Cimas Ev :material/electric_car: Charging Site")
+st.divider()
+st.markdown(":red[:small[*****    Pls refresh before any action to use up-to-date information        ****]]")
 
 if 'selected_name' not in st.session_state : 
   st.session_state.selected_name = "None" 
@@ -106,9 +109,10 @@ def release_spot():
       ws[0].update([[st.session_state.spots]],'A1')
       print("***** release_spot *****")
     if (len(user_q)) :
-      send_email(email_dict[user_q[0]],"Tesla Charging spot available, your are 1st on waiting list","Kindly use the spot")
+      str = f"If you are not in a position to take the spot immediately kindly inform {user_q[1]} who is next in queue" if (len(user_q) > 1) else "" 
+      send_email(email_dict[user_q[0]],"Tesla Charging spot available, your are 1st on waiting list","Kindly use the spot. " + str)
     if (len(user_q)>1) :
-      send_email(email_dict[user_q[1]],"Tesla Charging spot available, your are 2nd on wating list","user_q[0] is ahead of you")
+      send_email(email_dict[user_q[1]],"Tesla Charging spot available, your are 2nd on wating list",f"{user_q[0]} is ahead of you")
 
 def quit_queue():
   print("quit queue")
@@ -136,19 +140,20 @@ def send_email(to_email,sub,body):
       server.login(sender_email, app_password)
       server.send_message(msg)
   
-  print(f"Email sent! to {sender_email} sub:{sub} body:{body}.. ")
+  print(f"Email sent! to {receiver_email} sub:{sub} body:{body}.. ")
 
 
 col1,col2,col3,col4 = st.columns(4)
 
 with col1:
-  st.button("Take a spot",disabled=(st.session_state.selected_name == "None"),on_click=take_spot)
+  st.button("Take spot",disabled=(st.session_state.selected_name == "None"),on_click=take_spot)
 
 with col2:
-  st.button("Release a spot",disabled=(st.session_state.selected_name == "None"),on_click=release_spot)
+  st.button("Release spot",disabled=(st.session_state.selected_name == "None"),on_click=release_spot)
 
 with col3:
-  st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
+    st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
+#  st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
 
 with col4:
     st.button("Quit queue",disabled=(st.session_state.selected_name == "None"),on_click=quit_queue)
@@ -164,6 +169,7 @@ for i in range(len(l_l_l[2])):
   names.append(nm)
   email_dict[nm] = em
 
+st.divider()
 st.selectbox("Identify yourself",names, key="selected_name")
 
 print_avail_spot()
@@ -211,4 +217,9 @@ with st.expander("Maintenance"):
       st.rerun()
 
 
+st.markdown(":material/article_person: :blue[Created by : Amit Gurung amitgurung22@gmail.com] ")
 
+#google material icon
+#https://fonts.google.com/icons?icon.set=Material+Symbols&icon.style=Rounded&selected=Material+Symbols+Rounded:article_person:FILL@0;wght@400;GRAD@0;opsz@24&icon.size=24&icon.color=%231f1f1f
+#streamlit emoji
+#https://streamlit-emoji-shortcodes-streamlit-app-gwckff.streamlit.app/
