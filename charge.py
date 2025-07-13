@@ -53,6 +53,7 @@ if 'button_disabled' not in st.session_state:
 
 def print_avail_spot():
   st.write(f"Selected user : {st.session_state.selected_name}")
+  st.divider()
   st.subheader(f"Number of spots available : {st.session_state.spots}")
 
 
@@ -200,7 +201,7 @@ with st.expander("Maintenance"):
     #b1 = st.button("Clear queue",disabled=(admin_psswd != "1234"))
     upd_spots =  st.number_input("Enter # of spots available",disabled=(admin_psswd != "1234"))
     c_val = st.checkbox("Clear queue",disabled=(admin_psswd != "1234"))
-    sub1 = st.form_submit_button("Apply")
+    sub1 = st.form_submit_button("Apply",disabled=(admin_psswd != "1234"))
     if sub1:
       ws[0].update([[upd_spots]],'A1')
       print("updating slots to {upd_spots}")
