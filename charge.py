@@ -43,6 +43,15 @@ for i in range(len(l_l)):
         if (re.match(r"\w",nm)):
           user_q.append(l_l[i][0])
 
+occupants = []          
+l_l = []
+l_l = l_l_l[3]
+for i in range(len(l_l)):
+    if len(l_l[i]) > 0:
+        nm = l_l[i][0]
+        if (re.match(r"\w",nm)):
+          occupants.append(l_l[i][0])
+
 if 'selected_name' not in st.session_state : 
   st.session_state.selected_name = "None" 
 
@@ -92,6 +101,8 @@ def take_spot():
       #st.rerun()
       print("***** take_spot *****")
       rm_user_from_q()
+      occupants.append(st.session_state.selected_name)
+      update_occupants_in_sheet()
     else:
         st.write("No spots available")    
 
@@ -103,6 +114,9 @@ def release_spot():
       st.session_state.spots = st.session_state.spots +1 
       ws[0].update([[st.session_state.spots]],'A1')
       print("***** release_spot *****")
+    if (st.session_state.selected_name in occupants):
+        occupants.remove(st.session_state.selected_name)
+        update_occupants_in_sheet()
     if (len(user_q)) :
       str = f"If you are not in a position to take the spot immediately kindly inform {user_q[1]} who is next in queue" if (len(user_q) > 1) else "" 
       send_email(email_dict[user_q[0]],"Tesla Charging spot available, your are 1st on waiting list","Kindly use the spot. " + str)
@@ -140,6 +154,15 @@ def send_email(to_email,sub,body):
 def send_test_email():
   send_email(email_dict[st.session_state.selected_name],"This is a test email from from ev charing site","")
 
+def update_occupants_in_sheet():
+    l_l = []
+#    for i in range(len(occupants)):
+    for i in range(4):
+      l = []
+      l.append(occupants[i] if i < len(occupants) else "")
+      l_l.append(l)
+    ws[3].update(l_l,'A1')
+
 tab1, tab2 = st.tabs(["Main","Instructions"])
 
 with tab1:
@@ -151,10 +174,10 @@ with tab1:
   col1,col2,col3,col4 = st.columns(4)
   
   with col1:
-    st.button("Take spot",disabled=(st.session_state.selected_name == "None"),on_click=take_spot)
+    st.button("Take spot",disabled=((st.session_state.selected_name == "None") or (st.session_state.spots <= 0)),on_click=take_spot)
   
   with col2:
-    st.button("Release spot",disabled=(st.session_state.selected_name == "None"),on_click=release_spot)
+    st.button("Release spot",disabled=((st.session_state.selected_name == "None") or (st.session_state.spots >= 4)),on_click=release_spot)
   
   with col3:
       st.button("Add to queue",disabled=(st.session_state.selected_name == "None"),on_click=add_to_queue)
@@ -179,6 +202,18 @@ with tab1:
   
   print_avail_spot()
   
+  st.divider()
+  st.subheader("Current spot occupants.. ")
+  df = pd.DataFrame(
+       {
+           "Name": occupants 
+       }
+  )
+  
+  st.table(df)
+  st.divider()
+  
+
   st.divider()
   st.subheader("Current wait queue.. ")
   
@@ -213,16 +248,20 @@ with tab1:
   with st.expander("Maintenance"):
     admin_psswd = st.text_input("Admin password")
     with st.form("form2"):
-      #b1 = st.button("Clear queue",disabled=(admin_psswd != "1234"))
-      upd_spots =  st.number_input("Enter # of spots available",disabled=(admin_psswd != "1234"))
-      c_val = st.checkbox("Clear queue",disabled=(admin_psswd != "1234"))
-      sub1 = st.form_submit_button("Apply",disabled=(admin_psswd != "1234"))
+      #b1 = st.button("Clear queue",disabled=(admin_psswd != "9876"))
+      upd_spots =  st.number_input("Enter # of spots available",disabled=(admin_psswd != "9876"))
+      c_val = st.checkbox("Clear queue",disabled=(admin_psswd != "9876"))
+      d_val = st.checkbox("Clean occupant",disabled=(admin_psswd != "9876"))
+      sub1 = st.form_submit_button("Apply",disabled=(admin_psswd != "9876"))
       if sub1:
         ws[0].update([[upd_spots]],'A1')
         print("updating slots to {upd_spots}")
         if c_val:
           ws[1].delete_rows(1,len(l_l_l[1]))
           user_q = []
+        if d_val:
+          ws[3].update([[''], [''], [''], [''] ],'A1')
+
         st.rerun()
   
   
@@ -244,7 +283,7 @@ with tab2:
          * If order to modify existing user info, pls match Name precisely
          * New user info can also be added using the same form
     """)
-    st.button("Send test :email: ",on_click=send_test_email)
+    st.button("Send test :email: ",disabled=(st.session_state.selected_name == "None"),on_click=send_test_email)
     st.markdown("""
 
        ### Limitations :material/production_quantity_limits:
