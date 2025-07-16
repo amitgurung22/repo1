@@ -34,7 +34,7 @@ ws, l_l_l = get_sheet_data()
 
 #user queue
 l_l = l_l_l[1]
-print(l_l)
+#print(l_l)
 user_q = []
 
 for i in range(len(l_l)):
@@ -64,10 +64,12 @@ def print_avail_spot():
   st.subheader(f"Number of spots available : {st.session_state.spots}")
 
 
-print("***** debug1 *****")
+#print("***** debug1 *****")
 st.session_state['spots'] = int(ws[0].cell(1,1).value)
 
-print(f"***** debug2 : {st.session_state.spots} *****")
+print(f" debug2 : {st.session_state.spots} : {st.session_state.selected_name}")
+print(f"occupants : {occupants}")
+print(f"user_q : {user_q}")
 
 def rm_user_from_q():
   if (st.session_state.selected_name in user_q):
@@ -79,7 +81,7 @@ def rm_user_from_q():
         l.append(user_q[i])
         n_n.append(l)
     ws[1].update(n_n,'A1')
-    print(n_n)
+    #print(n_n)
 
 
 #spots = 0
@@ -87,7 +89,7 @@ def add_to_queue():
     st.write("Adding to queue..")
     #ws[0].update([[4]],'A1')
     #st.session_state.spots = 4
-    print("***** add_to_queue *****")
+    print(f" add_to_queue : user :{st.session_state.selected_name} : spots : {st.session_state.spots}")
     ws[1].update([[st.session_state.selected_name]],f"A{len(l_l_l[1])+1}")
 
 #reduce the # of open spots
@@ -99,10 +101,13 @@ def take_spot():
       ws[0].update([[st.session_state.spots]],'A1')
       st.write("taking a spot ...")
       #st.rerun()
-      print("***** take_spot *****")
+      print(f" take_spot : user :{st.session_state.selected_name} : spots : {st.session_state.spots}")
       rm_user_from_q()
       occupants.append(st.session_state.selected_name)
       update_occupants_in_sheet()
+      if (len(user_q)):
+          send_email(email_dict[user_q[0]],"Tesla Charging spot update..",f"{st.session_state.selected_name} took the open spot so you are now 1st in queue")
+
     else:
         st.write("No spots available")    
 
@@ -113,7 +118,7 @@ def release_spot():
       st.write("Releasing a spot...") 
       st.session_state.spots = st.session_state.spots +1 
       ws[0].update([[st.session_state.spots]],'A1')
-      print("***** release_spot *****")
+      print(f" release_spot : user :{st.session_state.selected_name} : spots : {st.session_state.spots}")
     if (st.session_state.selected_name in occupants):
         occupants.remove(st.session_state.selected_name)
         update_occupants_in_sheet()
@@ -121,10 +126,15 @@ def release_spot():
       str = f"If you are not in a position to take the spot immediately kindly inform {user_q[1]} who is next in queue" if (len(user_q) > 1) else "" 
       send_email(email_dict[user_q[0]],"Tesla Charging spot available, your are 1st on waiting list","Kindly use the spot. " + str)
     if (len(user_q)>1) :
-      send_email(email_dict[user_q[1]],"Tesla Charging spot available, your are 2nd on wating list",f"{user_q[0]} is ahead of you")
+        #if 2 spots are available
+        if (st.session_state.spots > 1) :
+          str = f"If you are not in a position to take the spot immediately kindly inform {user_q[2]} who is next in queue" if (len(user_q) > 2) else "" 
+          send_email(email_dict[user_q[1]],"Tesla Charging spot available, your are also 1st on wating list now","Kindly use the spot. " + str)
+        else:
+          send_email(email_dict[user_q[1]],"Tesla Charging spot available, your are 2nd on wating list",f"{user_q[0]} is ahead of you. Pls continue to wait")
 
 def quit_queue():
-  print("quit queue")
+  print(f" quit queue : user :{st.session_state.selected_name} : spots : {st.session_state.spots}")
   #cell = ws[1].find(st.session_state.selected_name)
   #print(f"found {st.session_state.selected_name} on {cell.row}:{cell.col}")
   rm_user_from_q()
